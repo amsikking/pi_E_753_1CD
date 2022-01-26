@@ -7,8 +7,13 @@ class Controller:
     piezo controller. Many more commands are available and have not been
     implemented.
     '''
-    def __init__(
-        self, which_port, name='E-753.1CD', verbose=True, very_verbose=False):
+    def __init__(self,
+                 which_port,            # COM port for controller
+                 z_tol_um=0.25,         # tolerance on positional error (um)
+                 name='E-753.1CD',      # optional name
+                 verbose=True,          # False for max speed
+                 very_verbose=False):   # True for debug
+        self.z_tol_um = z_tol_um
         self.name = name
         self.verbose = verbose
         self.very_verbose = very_verbose
@@ -173,8 +178,8 @@ class Controller:
         assert -10 <= v_min <= 10 and -10 <= v_max <= 10
         assert z_min_ai < z_max_ai      # max and min positions (um)
         assert self.z_min <= z_min_ai and z_max_ai <= self.z_max
-        assert z_min_ai <= round(self.z) <= z_max_ai, (
-            "current position must be within limits for handover")
+        assert self.z >= z_min_ai - self.z_tol_um, 'current z out of range'
+        assert self.z <= z_max_ai + self.z_tol_um, 'current z out of range'
         # gain and offset from manual:
         self.gain = 0.1 * (z_max_ai - z_min_ai) / (v_max - v_min)
         self.offset = z_max_ai - self.gain * (10 * v_max)
@@ -193,7 +198,8 @@ class Controller:
             print("%s: voltage for move um (z_voltage)"%self.name)
         assert self._set_analogue_control_limits, 'these must be set first'
         if relative: z = self.z + z
-        assert self.z_min_ai <= round(z, 2) <= self.z_max_ai
+        assert z >= self.z_min_ai - self.z_tol_um, 'requested position too low'
+        assert z <= self.z_max_ai + self.z_tol_um, 'requested position too high'
         # ScaledValue = OFFSET + GAIN * NormalizedValue (from manual)
         # z = self.offset + self.gain * (10 * z_voltage)
         z_voltage = float(z - self.offset) / (self.gain * 10)
