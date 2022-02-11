@@ -155,7 +155,7 @@ class Controller:
         assert not self._analog_control
         if relative:
             self.z = float(self.z + z)
-            cmd = 'MVR 1 %0.9f'%self.z
+            cmd = 'MOV 1 %0.9f'%self.z
         if not relative: # Abolute move
             self.z= float(z)
             cmd = 'MOV 1 %0.9f'%self.z
@@ -241,9 +241,9 @@ if __name__ == '__main__':
 ##    piezo._get_parameter('0x07000901')
 ##    piezo._set_parameter('0x07000901', 0.00000000)
 
-    print('\nRelative and absolute moves:')
-    piezo.move_um(10)
+    print('\nAbsolute and relative moves:')
     piezo.move_um(0, relative=False)
+    piezo.move_um(10)
 
     print('\nNon-blocking call:')
     piezo.move_um(10, relative=False, block=False)
