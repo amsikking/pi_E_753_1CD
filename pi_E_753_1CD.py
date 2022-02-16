@@ -34,13 +34,18 @@ class Controller:
         self.get_position(verbose=False)
         self.z_min = float(self._send('TMN?')[0].split('=')[1])
         self.z_max = float(self._send('TMX?')[0].split('=')[1])
+        self._moving = False
+        self._analog_control = False
+        # move z to legal position if needed:
+        if self.z <= self.z_min + self.z_tol_um:
+            self.move_um(self.z_min + self.z_tol_um, relative=False)
+        if self.z >= self.z_max - self.z_tol_um:
+            self.move_um(self.z_max - self.z_tol_um, relative=False)
         # set state:
         self._set_servo_enable(True) # closed loop control
         self._set_analogue_control_limits = False
         self._send('CCL 1 advanced', respond=False) # need >= 'cmd level 1'
         self._send('SPA 1 0x06000500 0', respond=False) # disable analog
-        self._analog_control = False
-        self._moving = False
         if self.verbose:
             self._print_attributes()
         return None
