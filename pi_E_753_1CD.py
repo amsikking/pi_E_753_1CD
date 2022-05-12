@@ -20,7 +20,7 @@ class Controller:
         if self.verbose: print('%s: Opening...'%name, end='')
         try:
             self.port = serial.Serial(
-                port=which_port, baudrate=57600, timeout=5)
+                port=which_port, baudrate=115200, timeout=5)
         except serial.serialutil.SerialException:
             raise IOError('%s: No connection on port %s'%(name, which_port))
         if self.verbose: print(" done.")
