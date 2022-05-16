@@ -24,7 +24,8 @@ class Controller:
         except serial.serialutil.SerialException:
             raise IOError('%s: No connection on port %s'%(name, which_port))
         if self.verbose: print(" done.")
-        # get device identity:
+        # check for errors and get device identity:
+        self._check_errors()
         self.identity = self._send('*IDN?')[0]
         # get physical units:
         self.port.write(b'SPA? 1 0x07000601\n')
@@ -37,13 +38,13 @@ class Controller:
         self.z_max = float(self._send('TMX?')[0].split('=')[1])
         self._moving = False
         self._analog_control = False
+        self._set_servo_enable(True) # closed loop control mandatory for 'MOV'
         # move z to legal position if needed:
         if self.z <= self.z_min + self.z_tol_um:
             self.move_um(self.z_min + self.z_tol_um, relative=False)
         if self.z >= self.z_max - self.z_tol_um:
             self.move_um(self.z_max - self.z_tol_um, relative=False)
         # set state:
-        self._set_servo_enable(True) # closed loop control
         self._set_analogue_control_limits = False
         self._send('CCL 1 advanced', respond=False) # need >= 'cmd level 1'
         self._send('SPA 1 0x06000500 0', respond=False) # disable analog
