@@ -228,6 +228,7 @@ class Controller:
             if z_target > self.z_max: z_target = self.z_max
             self._send('SPA 1 0x06000500 0', respond=False) # disable analog
             self._send('MOV 1 %0.9f'%z_target, respond=False) # zero movement
+            self.get_position(verbose=False) # update self.z after ao control
         self._analog_control = enable
         return None
         
